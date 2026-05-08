@@ -1,60 +1,49 @@
-# Sistema Ágora: Sistema Interagéntico para Evaluación Ética de IA
+# Ágora: Sistema Interagéntico de Evaluación Ética y Auditoría Académica
 
-Sistema de auditoría académica basado en flujos low-code y modelos de lenguaje de gran tamaño (LLMs) con enfoque Human-In-The-Loop (HITL).
+Este repositorio constituye la base técnica y conceptual de una investigación en curso desarrollada por J. Víctor Faccio Lucero (UNRC) y Noemí Luján P. (UAM-X).
 
-## 📖 Descripción del Proyecto
+El sistema Ágora es una arquitectura orquestada de agentes de Inteligencia Artificial diseñada para asistir a la persona docente en la evaluación de la integridad académica bajo un enfoque constructivista. A diferencia de los detectores comerciales binarios, este sistema promueve la fricción productiva y la co-construcción de saberes mediante un proceso de debate y auditoría ética.
 
-Este repositorio contiene la configuración en JSON de un sistema multi-agente diseñado para asistir a las personas docentes en la evaluación de trabajos de investigación formativa. El objetivo del sistema no es "detectar plagio" de forma punitiva, sino generar un debate automatizado (acusación vs. defensa vs. verificación de hechos) que provea a la persona docente de un dictamen estructurado y un banco de preguntas para la defensa oral del estudiantado.
+# 1. Estructura Epistemológica y Contextual
 
-Diseñado inicialmente para auditar el Sistema Modular de la UAM-Xochimilco, el sistema está construido de forma modular. Puede ser desplegado en cualquier institución de educación superior (como la UNRC u otras universidades) simplemente modificando las variables de entorno inyectadas, adaptándose a cualquier metodología de investigación formativa.
+El "Por Qué" de este Desarrollo
 
-## 🧠 Arquitectura de Agentes
+La crisis epistemológica provocada por la irrupción de los Grandes Modelos de Lenguaje (LLMs) demanda soluciones que no caigan en el determinismo tecnológico. Los detectores tradicionales fallan sistemáticamente al procesar el español latinoamericano y son incapaces de distinguir el ensamblaje modular del trabajo colaborativo humano de la generación sintética.
 
-El flujo de trabajo se compone de tres nodos agénticos (microservicios) que se ejecutan de manera secuencial:
+Ágora no emite veredictos automáticos. Su propósito es proveer evidencia estructurada para la sesión de réplica, garantizando la validez pedagógica y legal en entornos universitarios al mantener siempre a la persona docente como el centro de la decisión final (Human-In-The-Loop - HITL).
 
-### Cicerón (Analista Forense Lingüístico): }
-Función: Analiza la estilometría, la coherencia temporal de la investigación y detecta "muletillas algorítmicas" o falta de ráfaga (burstiness). Extrae metadatos y crea la ficha de identificación inicial.
+## 2. Arquitectura Técnica Low-Code
 
-Configuración: agent_ciceron.json
+El sistema opera como un pipeline de procesamiento secuencial de nodos. La orquestación puede realizarse en plataformas como n8n, Make o Copilot Studio.
 
-### Hortensia (Contextualizadora Ética):
+graph TD
+    A[Ingesta: Texto + Notas Docentes + Perfil] --> B[Nodo 1: Cicerón]
+    B --> C[Nodo 2: Séneca]
+    C --> D[Nodo 3: Hortensia]
+    D --> E[Salida: Dictamen Integrado + Banco de Preguntas]
+    E --> F[Sesión de Réplica Oral]
 
-Función: Actúa como defensora. Duda activamente de Cicerón integrando variables pedagógicas (trabajo en equipo, iteraciones por comentarios docentes, neurodivergencias) para mitigar sesgos de los detectores de IA contra el español latinoamericano.
+### Los Agentes del Ágora
 
-Configuración: agent_hortensia.json
+Cicerón (Analista Forense): Genera la ficha de identificación (título, integrantes, anexos). Analiza la estilometría buscando falta de ráfaga (burstiness), muletillas algorítmicas y colapso deíctico.
 
-### Séneca (Auditor Bibliográfico Neutral):
+Séneca (Auditor Bibliográfico): Con la función de grounding activa, busca en Google Scholar los títulos o DOIs de la bibliografía para identificar fuentes reales o alucinaciones sintéticas.
 
-Función: Utiliza herramientas de búsqueda web (Grounding) para verificar la existencia real de las fuentes bibliográficas citadas por los estudiantes (DOIs, títulos, autores), detectando alucinaciones sintéticas.
+Hortensia (Contextualizadora Ética): Refuta las anomalías detectadas por Cicerón. Identifica las notas docentes (mayúsculas, comentarios intercalados) para evitar que se procesen como ruido y defiende el proceso humano frente al "impuesto neurotípico".
 
-Configuración: agent_seneca.json
+Resiliencia Técnica: Manejo de Ruido
 
-## ⚙️ Implementación en Plataformas Low-Code
+El sistema posee una instrucción específica para identificar e ignorar (o integrar pedagógicamente) las intervenciones de la persona docente dentro del documento (texto en MAYÚSCULAS, notas en otros colores o comentarios). Esto permite procesar borradores reales con retroalimentación previa sin contaminar el análisis forense.
 
-Este sistema está diseñado para ser implementado en plataformas de automatización (como Make, n8n, Microsoft Copilot Studio, Power Automate o LangChain).
+## 3. Reproducibilidad y Colaboración
 
-Para que los agentes funcionen, el nodo disparador (trigger) debe inyectar las siguientes variables dinámicas en el payload de las llamadas a la API:
 
-{{perfil_estudiante}}: Datos demográficos e integrantes del equipo.
+Carga de JSON: Importar los archivos agent_ciceron.json, agent_seneca.json y agent_hortensia.json en los nodos respectivos de la plataforma low-code.
 
-{{modelo_educativo}}: Variable clave para la escalabilidad. Aquí se define si el agente evaluará bajo las reglas de la UAM-X, de la UNRC, o cualquier otro modelo de investigación formativa.
+Definición de Variables: Configurar la inyección de {{texto_estudiante}}, {{notas_docente}} y {{modelo_educativo}}.
 
-{{reporte_similitud}}: % de similitud de herramientas externas (ej. iThenticate, Turnitin).
+Concatenación: Asegurar que la salida del Nodo 1 (Cicerón) alimente el contexto de los nodos subsecuentes.
 
-{{texto_estudiante}}: El documento de investigación completo.
+Escalabilidad Institucional
 
-{{analisis_ciceron}}: Variable dinámica que pasa el análisis del Agente 1 al Agente 2.
-
-## Parámetros de API Recomendados
-
-Todos los agentes están optimizados para utilizar la API de Gemini 3 Pro con capacidades de razonamiento profundo.
-
-Thinking Level: High (Vital para evitar alucinaciones lógicas).
-
-Temperature: Variable (0.8 para forense, 0.9 para defensa, 0.2 para auditoría bibliográfica).
-
-Max Output Tokens: 65536.
-
-## 🧑‍🏫 Humano en el Bucle / Human in the Loop (HITL)
-
-Este sistema es una herramienta de asistencia, no un juez automatizado. La salida final del orquestador es un Dictamen Preliminar consolidado. La decisión ética final recae exclusiva y obligatoriamente en la Persona Docente, quien utilizará los hallazgos y el "Banco de Preguntas" generado por los agentes para interrogar a los estudiantes en una sesión de réplica presencial o sincrónica.
+Para adaptar Ágora de la UAM-X a la UNRC o cualquier otra institución, sólo es necesario modificar el contexto pedagógico en el payload de la variable {{modelo_educativo}}. La arquitectura de agentes permanece intacta.
